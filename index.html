@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Final Quiz</title>
+<style>
+:root {
+  --bg:#f5f7fb; --card:#fff; --text:#172033; --muted:#667085;
+  --primary:#2563eb; --primary2:#1d4ed8; --ok:#15803d; --bad:#dc2626;
+  --border:#e5e7eb; --shadow:0 8px 30px rgba(15,23,42,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;line-height:1.55}
+header{background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;padding:28px 18px}
+.wrap{max-width:1050px;margin:auto;padding:0 16px}
+h1{margin:0 0 5px;font-size:30px} .sub{opacity:.9}
+.toolbar{position:sticky;top:0;z-index:10;background:rgba(245,247,251,.94);backdrop-filter:blur(8px);padding:12px 0;border-bottom:1px solid var(--border)}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button,select{font:inherit}
+button{border:0;border-radius:10px;padding:11px 16px;cursor:pointer;font-weight:700}
+.primary{background:var(--primary);color:white} .primary:hover{background:var(--primary2)}
+.secondary{background:white;color:var(--text);border:1px solid var(--border)}
+select{padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:white}
+.progress{height:9px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin-top:10px}
+.progress > div{height:100%;background:#22c55e;width:0;transition:.25s}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:22px;margin:18px 0}
+.chapter{font-weight:800;color:#4f46e5;font-size:14px;margin-bottom:7px}
+.qtitle{font-size:19px;font-weight:750;margin-bottom:16px}
+.qimage{display:block;max-width:100%;width:min(850px,100%);margin:12px auto 20px;border-radius:12px;border:1px solid var(--border)}
+.options{display:grid;gap:10px}
+.option{display:flex;gap:10px;align-items:flex-start;padding:13px 14px;border:1px solid var(--border);border-radius:12px;cursor:pointer;background:#fff;transition:.15s}
+.option:hover{border-color:#93c5fd;background:#eff6ff}
+.option input{margin-top:5px;accent-color:var(--primary)}
+.option.correct{border-color:#86efac;background:#f0fdf4}
+.option.wrong{border-color:#fca5a5;background:#fef2f2}
+.result{display:none;background:white;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:24px;margin:20px 0}
+.score{font-size:40px;font-weight:900;color:var(--primary)}
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0 20px}
+.stat{padding:12px 15px;background:#f8fafc;border-radius:12px;border:1px solid var(--border)}
+.review{padding:15px;border-radius:12px;margin:10px 0;border:1px solid #fecaca;background:#fff7f7}
+.review b{color:var(--bad)} .self{background:#fffbeb;border-color:#fde68a}
+.hidden{display:none}
+footer{text-align:center;color:var(--muted);padding:35px 0}
+@media(max-width:600px){h1{font-size:24px}.card{padding:16px}.qtitle{font-size:17px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>AI Final Quiz</h1>
+    <div class="sub">แบบฝึกทำข้อสอบ AI — ทำซ้ำได้ไม่จำกัด พร้อมตรวจคะแนนและข้อที่ผิด</div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <div class="controls">
+      <select id="chapterFilter"></select>
+      <button class="secondary" id="shuffleBtn">🔀 สุ่มข้อ/ตัวเลือกใหม่</button>
+      <button class="secondary" id="topBtn">⬆ กลับด้านบน</button>
+      <span id="countText" style="color:#667085;font-weight:650"></span>
+    </div>
+    <div class="progress"><div id="progressBar"></div></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div id="quiz"></div>
+  <section id="result" class="result"></section>
+  <div class="controls" style="justify-content:center;margin:20px 0 45px">
+    <button class="primary" id="submitBtn">ส่งคำตอบ / ตรวจคะแนน</button>
+    <button class="secondary" id="retryBtn">ทำใหม่อีกครั้ง</button>
+  </div>
+</main>
+
+<footer>ข้อสอบอ้างอิงจากไฟล์ที่ผู้ใช้ให้มา • บทที่ 9 ข้อ 9 มีรูปโจทย์ประกอบ</footer>
+
+<script>
+const ALL = [{"id":"ch6-1","chapterId":"ch6","chapter":"บทที่ 6 — Introduction to Machine Learning","number":1,"question":"ข้อใดไม่ใช่วิธีการเรียนรู้ของ Machine learning ในปัจจุบัน","options":["Unsupervised learning","Semisupervised learning","Resupervised learning","Supervised learning"],"answer":2,"image":null},{"id":"ch6-2","chapterId":"ch6","chapter":"บทที่ 6 — Introduction to Machine Learning","number":2,"question":"ข้อใดไม่ใช่การประยุกต์ใช้ Machine learning ในการแก้ปัญหา","options":["พยากรณ์ราคาหุ้น","ทำนายราคาบ้าน","คาดการณ์น้ำท่วม","แก้ปัญหา Sudoku"],"answer":3,"image":null},{"id":"ch6-3","chapterId":"ch6","chapter":"บทที่ 6 — Introduction to Machine Learning","number":3,"question":"ข้อใดให้ความหมายของ Overfit ได้ดีที่สุด","options":["โมเดลที่ได้เรียนรู้ได้ดี","โมเดลที่ได้นำไปใช้จริงไม่ได้","ข้อมูลมีปริมาณเยอะเกินไป","เกิดขึ้นกับโมเดลที่เรียนรู้จากข้อมูลเพียง 1 iteration"],"answer":1,"image":null},{"id":"ch6-4","chapterId":"ch6","chapter":"บทที่ 6 — Introduction to Machine Learning","number":4,"question":"ข้อใดกล่าวถูกต้องเกี่ยวกับ Machine learning ได้ถูกต้อง","options":["บางส่วนของ Machine learning ไม่เกี่ยวข้องกับ AI","ต้องมีการเรียนรู้จากข้อมูลเพื่อนำไปใช้ตัดสินใจกับข้อมูลที่ไม่เคยเห็น","ทุกสิ่งที่เป็นเครื่องมือ เช่น สว่านไฟฟ้า","Adversarial Search จัดอยู่ในกลุ่มของ Machine Learning"],"answer":1,"image":null},{"id":"ch6-5","chapterId":"ch6","chapter":"บทที่ 6 — Introduction to Machine Learning","number":5,"question":"Supervised learning จำเป็นต้องมีองค์ประกอบใด","options":["labeled data","ถูกทุกข้อ","input data","output data"],"answer":1,"image":null},{"id":"ch6-6","chapterId":"ch6","chapter":"บทที่ 6 — Introduction to Machine Learning","number":6,"question":"Unsupervised learning ไม่จำเป็นต้องมีองค์ประกอบใด","options":["input data","output data","labeled data","ถูกทุกข้อ"],"answer":2,"image":null},{"id":"ch6-7","chapterId":"ch6","chapter":"บทที่ 6 — Introduction to Machine Learning","number":7,"question":"Positive class = “เป็นโรค”, Negative class = “ไม่เป็นโรค”, 990 not sick and 10 sick, model predicts everyone “not sick”: which describes best?","options":["TP สูง และ Sensitivity สูง","TN สูง และ Accuracy ต่ำ","TN สูง แต่ Sensitivity ต่ำ","TP สูง แต่ Accuracy ต่ำ"],"answer":2,"image":null},{"id":"ch6-8","chapterId":"ch6","chapter":"บทที่ 6 — Introduction to Machine Learning","number":8,"question":"การ Validation ควรทำในการเรียนรู้แบบใด","options":["Supervised learning","ควรทำทั้งคู่","Unsupervised learning","ไม่ควรทำทั้งคู่"],"answer":1,"image":null},{"id":"ch6-9","chapterId":"ch6","chapter":"บทที่ 6 — Introduction to Machine Learning","number":9,"question":"Email is detected Spam and really is Spam = ?","options":["True Positive (TP)","False Negative (FN)","False Positive (FP)","True Negative (TN)"],"answer":0,"image":null},{"id":"ch7-1","chapterId":"ch7","chapter":"บทที่ 7 — Decision Tree","number":1,"question":"คำสั่ง fit หมายถึงอะไร ในกรณี DecisionTreeClassifier","options":["Train โมเดลจากข้อมูล Training","สร้างโมเดล DecisionTreeClassifier","พยากรณ์ผลลัพธ์ของโมเดลจากข้อมูล Validation","แบ่งข้อมูล Training และ Validation"],"answer":0,"image":null},{"id":"ch7-2","chapterId":"ch7","chapter":"บทที่ 7 — Decision Tree","number":2,"question":"คำสั่งใดใช้ในการแสดงภาพโครงสร้างของโมเดล Decision Tree, model = DecisionTreeClassifier","options":["model.plot_tree()","plot(mode)","model.plot()","plot_tree(model)"],"answer":3,"image":null},{"id":"ch7-3","chapterId":"ch7","chapter":"บทที่ 7 — Decision Tree","number":3,"question":"Decision Tree Time Complexity Average Case","options":["O(n log n)","O(n^2)","O(log n)","O(n)"],"answer":2,"image":null},{"id":"ch7-4","chapterId":"ch7","chapter":"บทที่ 7 — Decision Tree","number":4,"question":"จุดเด่นของ Decision Tree คือ","options":["การจำแนกข้อมูลแบบ Nonlinear ได้ดี","มีความสามารถ Generalization ที่สูง","ทุกข้อเป็นจุดเด่นของ Decision Tree","เกิด Overfit ได้ยาก"],"answer":0,"image":null},{"id":"ch7-5","chapterId":"ch7","chapter":"บทที่ 7 — Decision Tree","number":5,"question":"Decision Tree Time Complexity Worst Case","options":["O(log n)","O(n)","O(n^2)","O(n log n)"],"answer":1,"image":null},{"id":"ch7-6","chapterId":"ch7","chapter":"บทที่ 7 — Decision Tree","number":6,"question":"maxdepth มีผลอย่างไรต่อโมเดล","options":["กำหนดจำนวน Class ตามจำนวนของ maxdepth","เกิด overfit ง่ายขึ้น","validation accuracy แปรผกผันกับ maxdepth","validation accuracy แปรผันตรงกับ maxdepth"],"answer":1,"image":null},{"id":"ch7-7","chapterId":"ch7","chapter":"บทที่ 7 — Decision Tree","number":7,"question":"Criterion Function หมายถึงสิ่งใดใน Decision Tree","options":["Optimization Function","Transfer Function","Gradient Descent","Activation Function"],"answer":0,"image":null},{"id":"ch7-8","chapterId":"ch7","chapter":"บทที่ 7 — Decision Tree","number":8,"question":"Decision Tree structure is:","options":["Graph","Set","Tuple","Tree"],"answer":3,"image":null},{"id":"ch7-9","chapterId":"ch7","chapter":"บทที่ 7 — Decision Tree","number":9,"question":"ข้อจำกัดด้านความไม่เสถียรของ Decision Tree","options":["ถูกทุกข้อ","imbalanced classes make tree favor majority class","ไม่เสถียร/อัปเดต node etc.","noise เยอะทำให้ overfit"],"answer":0,"image":null},{"id":"ch7-10","chapterId":"ch7","chapter":"บทที่ 7 — Decision Tree","number":10,"question":"นิสิตสามารถนำความรู้เรื่อง Decision Tree ไปใช้ประโยชน์ใดได้บ้างในชีวิตประจำวันหรือในอนาคต","options":[],"answer":null,"image":null},{"id":"ch8-1","chapterId":"ch8","chapter":"บทที่ 8 — Artificial Neural Network","number":1,"question":"Transfer Function ทำหน้าที่ใด","options":["เป็นตัวแปรที่ใช้ในการคูณกับ input แต่ละตัว","ตัดสินใจว่า input นั้น ๆ ควรจะอยู่ใน class ใด","เพิ่มหรือลดค่าความคลาดเคลื่อนของผลลัพธ์สุดท้าย ในปริมาณที่ยอมรับได้","คำนวณผลรวมระหว่าง input และ weight"],"answer":3,"image":null},{"id":"ch8-2","chapterId":"ch8","chapter":"บทที่ 8 — Artificial Neural Network","number":2,"question":"ANN เลียนแบบสิ่งใด","options":["จิตใจมนุษย์","ธรรมชาติ","คณิตศาสตร์","สมองมนุษย์"],"answer":3,"image":null},{"id":"ch8-3","chapterId":"ch8","chapter":"บทที่ 8 — Artificial Neural Network","number":3,"question":"Bias ทำหน้าที่ใด","options":["เพิ่มหรือลดค่าความคลาดเคลื่อนของผลลัพธ์สุดท้าย ในปริมาณที่ยอมรับได้","เป็นตัวแปรที่ใช้ในการคูณกับ input แต่ละตัว","คำนวณผลรวมระหว่าง input และ weight","ตัดสินใจว่า input นั้น ๆ ควรจะอยู่ใน class ใด"],"answer":0,"image":null},{"id":"ch8-4","chapterId":"ch8","chapter":"บทที่ 8 — Artificial Neural Network","number":4,"question":"Activation Function ทำหน้าที่ใด","options":["ตัดสินใจว่า input นั้น ๆ ควรจะอยู่ใน class ใด","เป็นตัวแปรที่ใช้ในการคูณกับ input แต่ละตัว","คำนวณผลรวมระหว่าง input และ weight","เพิ่มหรือลดค่าความคลาดเคลื่อนของผลลัพธ์สุดท้าย ในปริมาณที่ยอมรับได้"],"answer":0,"image":null},{"id":"ch8-5","chapterId":"ch8","chapter":"บทที่ 8 — Artificial Neural Network","number":5,"question":"Function ใดคล้าย Softmax มากที่สุด","options":["LeakyReLU","Linear","ReLU","Sigmoid"],"answer":3,"image":null},{"id":"ch8-6","chapterId":"ch8","chapter":"บทที่ 8 — Artificial Neural Network","number":6,"question":"x.unique() gives:","options":["แสดงข้อมูล x เฉพาะข้อมูลที่แตกต่าง","แสดงข้อมูล x ทั้งหมด","แสดงข้อมูล x เฉพาะ dimension แรก","แสดงข้อมูล x เฉพาะ dimension สุดท้าย"],"answer":0,"image":null},{"id":"ch8-7","chapterId":"ch8","chapter":"บทที่ 8 — Artificial Neural Network","number":7,"question":"Function ใดมีลักษณะ Classification แตกต่างจากข้ออื่น","options":["Linear","Sigmoid","ReLU","Softmax"],"answer":0,"image":null},{"id":"ch8-8","chapterId":"ch8","chapter":"บทที่ 8 — Artificial Neural Network","number":8,"question":"np.random.shuffle(x) purpose","options":["เลือกเลขเพลงแบบสุ่มจาก playlist","สุ่มข้อมูลจำนวนเต็ม…","สุ่มข้อมูลเท่ากับจำนวน x โดยเลือกจากค่าที่อยู่ใน x แต่ละค่า","สลับลำดับข้อมูลของ x แบบสุ่ม"],"answer":3,"image":null},{"id":"ch8-9","chapterId":"ch8","chapter":"บทที่ 8 — Artificial Neural Network","number":9,"question":"marker=“s” in matplotlib","options":["วงกลม","สี่เหลี่ยม","ดาว","จุด"],"answer":1,"image":null},{"id":"ch8-10","chapterId":"ch8","chapter":"บทที่ 8 — Artificial Neural Network","number":10,"question":"นิสิตมีความเข้าใจ ANN อยู่ในระดับใด","options":[],"answer":null,"image":null},{"id":"ch9-1","chapterId":"ch9","chapter":"บทที่ 9 — CNN","number":1,"question":"Max Pooling Layer มีหน้าที่ใด","options":["แปลง pixel binary","เพิ่มความละเอียด feature map","ลดขนาด feature map และเก็บค่าที่โดดเด่นที่สุดในแต่ละ region","เพิ่มจำนวน parameter"],"answer":2,"image":null},{"id":"ch9-2","chapterId":"ch9","chapter":"บทที่ 9 — CNN","number":2,"question":"Overfitting in CNN","options":["learning rate ต่ำเกินไปจนไม่ converge","epoch น้อยเกินไป","model parameter น้อยเกินไป","model ซับซ้อนเกินไปจนจำ noise"],"answer":3,"image":null},{"id":"ch9-3","chapterId":"ch9","chapter":"บทที่ 9 — CNN","number":3,"question":"Convolution Layer","options":["เลื่อน filter ขนาดเล็กผ่านภาพเพื่อสกัด local feature","fully connect all neurons","feature map to class probability","reduce dimension by averaging pixels"],"answer":0,"image":null},{"id":"ch9-4","chapterId":"ch9","chapter":"บทที่ 9 — CNN","number":4,"question":"Batch Normalization effect","options":["ลด parameter > ครึ่ง","แทน activation ทั้งหมด","เพิ่ม test accuracy directly without hyperparameter adjustment","ทำให้ training เสถียรขึ้นและสามารถใช้ learning rate สูงขึ้นได้"],"answer":3,"image":null},{"id":"ch9-5","chapterId":"ch9","chapter":"บทที่ 9 — CNN","number":5,"question":"Dropout","options":["สุ่มปิด neuron บางส่วนเพื่อป้องกัน overfitting","เร่ง inference","เพิ่ม feature map","ลด epoch"],"answer":0,"image":null},{"id":"ch9-6","chapterId":"ch9","chapter":"บทที่ 9 — CNN","number":6,"question":"Transfer Learning in CNN","options":["แปลง model ให้รองรับภาษาอื่น","transfer gradient ท้ายไปแรก","นำ model ที่ฝึกบน dataset ใหญ่ เช่น ImageNet มาปรับใช้กับงานใหม่","ย้าย model file to server"],"answer":2,"image":null},{"id":"ch9-7","chapterId":"ch9","chapter":"บทที่ 9 — CNN","number":7,"question":"Fully Connected Layer at end","options":["สกัด edge/texture","reduce feature map by convolution","map extracted features to output class","normalize pixels 0-1"],"answer":2,"image":null},{"id":"ch9-8","chapterId":"ch9","chapter":"บทที่ 9 — CNN","number":8,"question":"CNN 10 classes output","options":["10 neurons + ReLU","10 neurons + Softmax","100 neurons + Tanh","1 neuron + Sigmoid"],"answer":1,"image":null},{"id":"ch9-9","chapterId":"ch9","chapter":"บทที่ 9 — CNN","number":9,"question":"Feature Map calculation","options":["1","-1","-6","0"],"answer":1,"image":"assets/cnn-q9.png"},{"id":"llm-1","chapterId":"llm","chapter":"Generative AI / LLM","number":1,"question":"Algorithm foundation of LLMs","options":["VAE","Transformer","Diffusion","GAN"],"answer":1,"image":null},{"id":"llm-2","chapterId":"llm","chapter":"Generative AI / LLM","number":2,"question":"Hallucination","options":["Model สร้างข้อมูลที่ผิดหรือไม่มีอยู่จริงขึ้นมาอย่างมั่นใจ","ปฏิเสธคำถาม","ใช้ภาษาไม่เหมาะ context","ตอบช้า due overload"],"answer":0,"image":null},{"id":"llm-3","chapterId":"llm","chapter":"Generative AI / LLM","number":3,"question":"Low temperature gives","options":["Thai always","refuses","deterministic/repeatable","creative/diverse"],"answer":2,"image":null},{"id":"llm-4","chapterId":"llm","chapter":"Generative AI / LLM","number":4,"question":"AGENTS.md pattern advantage","options":["faster Python without API","แยก configuration ของ AI (บุคลิก กฎ format) ออกจาก code","compress prompt","encrypt API key automatically"],"answer":1,"image":null},{"id":"llm-5","chapterId":"llm","chapter":"Generative AI / LLM","number":5,"question":"Chain-of-Thought prompting helps reduce:","options":["API latency","Hallucination by having model show reasoning before summary","request cost","model memory size"],"answer":1,"image":null},{"id":"llm-6","chapterId":"llm","chapter":"Generative AI / LLM","number":6,"question":"LLM works by:","options":["ทำนาย token ถัดไปจาก context ก่อนหน้า","search stored database","image pattern to text","speech to text via Fourier Transform"],"answer":0,"image":null},{"id":"llm-7","chapterId":"llm","chapter":"Generative AI / LLM","number":7,"question":"Few-shot vs Zero-shot","options":["Few-shot always JSON","Few-shot always larger model","Few-shot gives Input-Output examples before actual question; Zero-shot no examples","Few-shot sends prompt multiple times"],"answer":2,"image":null},{"id":"llm-8","chapterId":"llm","chapter":"Generative AI / LLM","number":8,"question":"Why store API key in .env instead of hard-code","options":["Python cannot read strings >50 chars","makes py smaller","hard-code can be committed to Git and leak","makes Python faster"],"answer":2,"image":null},{"id":"llm-9","chapterId":"llm","chapter":"Generative AI / LLM","number":9,"question":"OpenRouter Chat Completion “system” role","options":["log DB","rate limit/quota","show final output","define personality, response rules, constraints of AI agent"],"answer":3,"image":null},{"id":"ethics-1","chapterId":"ethics","chapter":"จริยธรรมปัญญาประดิษฐ์ — Ethics","number":1,"question":"ข้อใดกล่าว “ไม่ถูกต้อง” เกี่ยวกับหลักจริยธรรม AI","options":["sustainability includes energy use and employment impact","transparency = reveal how system works; explainability = explain reasons for specific output","responsibility for system decisions tied to humans","high overall accuracy means system is sufficiently fair"],"answer":3,"image":null},{"id":"ethics-2","chapterId":"ethics","chapter":"จริยธรรมปัญญาประดิษฐ์ — Ethics","number":2,"question":"Correct EIA order","options":["กำหนดขอบเขต → ประเมินตามหลักจริยธรรม → วิเคราะห์ผลกระทบ","ประเมินหลักจริยธรรม → วิเคราะห์ → กำหนดขอบเขต","กำหนดขอบเขต → วิเคราะห์ → ประเมินหลักจริยธรรม","วิเคราะห์ → กำหนดขอบเขต → ประเมินหลักจริยธรรม"],"answer":0,"image":null},{"id":"ethics-3","chapterId":"ethics","chapter":"จริยธรรมปัญญาประดิษฐ์ — Ethics","number":3,"question":"Hiring AI trained on 10 years data mostly men, scores women lower =","options":["Feedback Bias","Algorithm Bias","Data Bias","Collection Bias"],"answer":2,"image":null},{"id":"ethics-4","chapterId":"ethics","chapter":"จริยธรรมปัญญาประดิษฐ์ — Ethics","number":4,"question":"AI decision causes harm; responsibility","options":["AI itself responsible","human responsibility always; define roles from project start","user always responsible","ตัวเลือกจากภาพต้นฉบับแสดงไม่ครบ"],"answer":1,"image":null},{"id":"ethics-5","chapterId":"ethics","chapter":"จริยธรรมปัญญาประดิษฐ์ — Ethics","number":5,"question":"Sustainable AI development practice","options":["Transfer Learning + Quantization/Pruning","always largest model","retrain from scratch every time","max epochs"],"answer":0,"image":null},{"id":"ethics-6","chapterId":"ethics","chapter":"จริยธรรมปัญญาประดิษฐ์ — Ethics","number":6,"question":"Why ethics","options":["AI less accurate than humans in all work","all systems legally need certification","development cost","decisions can affect rights, opportunities, wellbeing, especially vulnerable groups"],"answer":3,"image":null},{"id":"ethics-7","chapterId":"ethics","chapter":"จริยธรรมปัญญาประดิษฐ์ — Ethics","number":7,"question":"Thai-language AI ethics impact assessment guide by","options":["ISO","NIST","UNESCO","ETDA (สพธอ.)ร่วมกับ AIGPC"],"answer":3,"image":null},{"id":"ethics-8","chapterId":"ethics","chapter":"จริยธรรมปัญญาประดิษฐ์ — Ethics","number":8,"question":"Who should first be informed when AI affects rights","options":["national regulator","internal model team","shareholders/investors","people affected by system decisions"],"answer":3,"image":null},{"id":"ethics-9","chapterId":"ethics","chapter":"จริยธรรมปัญญาประดิษฐ์ — Ethics","number":9,"question":"UNESCO 10 ethical dimensions","options":["directly legally binding on all 194 member states","dimensions 1 and 10 used in scope-setting; other 8 in principle assessment/impact analysis","only technical, no social/environmental","all 10 used in same stage"],"answer":1,"image":null}];
+const quizEl = document.getElementById('quiz');
+const resultEl = document.getElementById('result');
+const filterEl = document.getElementById('chapterFilter');
+const countText = document.getElementById('countText');
+const progressBar = document.getElementById('progressBar');
+
+let questions = [];
+let submitted = false;
+
+const chapterOrder = [...new Map(ALL.map(q => [q.chapterId, q.chapter])).entries()];
+
+function shuffle(a) {
+  const x = [...a];
+  for (let i=x.length-1;i>0;i--) {
+    const j=Math.floor(Math.random()*(i+1)); [x[i],x[j]]=[x[j],x[i]];
+  }
+  return x;
+}
+
+function setupFilter() {
+  filterEl.innerHTML = '<option value="all">ทุกบท</option>' +
+    chapterOrder.map(([id,title]) => `<option value="${id}">${title}</option>`).join('');
+}
+
+function newAttempt() {
+  submitted = false;
+  resultEl.style.display='none';
+  resultEl.innerHTML='';
+  const selected = filterEl.value || 'all';
+  let pool = selected === 'all' ? ALL : ALL.filter(q => q.chapterId === selected);
+  questions = shuffle(pool).map(q => {
+    const order = q.options.map((_,i)=>i);
+    const shuffledOrder = shuffle(order);
+    return {...q, displayOptions: shuffledOrder.map(i=>({text:q.options[i], original:i}))};
+  });
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function render() {
+  quizEl.innerHTML='';
+  questions.forEach((q, idx) => {
+    const card=document.createElement('section');
+    card.className='card';
+    const selfAssessment = q.answer === null;
+    card.innerHTML = `
+      <div class="chapter">${q.chapter} • ข้อ ${q.number}</div>
+      <div class="qtitle">${idx+1}. ${escapeHtml(q.question)}</div>
+      ${q.image ? `<img class="qimage" src="${q.image}" alt="รูปโจทย์บทที่ 9 ข้อ 9 Feature Map calculation">` : ''}
+      ${selfAssessment
+        ? `<div class="self" style="padding:14px;border:1px solid #fde68a;border-radius:12px">ข้อนี้เป็นคำถามประเมินตนเอง และไม่มีคำตอบจากต้นฉบับ จึงไม่นำไปคิดคะแนน</div>`
+        : `<div class="options">${q.displayOptions.map((o,j)=>`
+          <label class="option">
+            <input type="radio" name="q-${q.id}" value="${o.original}">
+            <span><b>${j+1})</b> ${escapeHtml(o.text)}</span>
+          </label>`).join('')}</div>`}
+    `;
+    quizEl.appendChild(card);
+  });
+  bindInputs();
+  updateProgress();
+  countText.textContent = `${questions.length} ข้อ • ${questions.filter(q=>q.answer!==null).length} ข้อที่มีคะแนน`;
+}
+
+function bindInputs() {
+  quizEl.querySelectorAll('input[type=radio]').forEach(inp => inp.addEventListener('change', updateProgress));
+}
+
+function updateProgress() {
+  const scorable=questions.filter(q=>q.answer!==null);
+  const answered=scorable.filter(q=>document.querySelector(`input[name="q-${q.id}"]:checked`)).length;
+  progressBar.style.width=(scorable.length ? answered/scorable.length*100 : 0)+'%';
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted=true;
+  const scorable=questions.filter(q=>q.answer!==null);
+  let score=0, unanswered=0, wrong=[];
+  questions.forEach(q => {
+    if(q.answer===null) return;
+    const chosen=document.querySelector(`input[name="q-${q.id}"]:checked`);
+    if(!chosen) { unanswered++; wrong.push({q, chosen:null}); return; }
+    const val=Number(chosen.value);
+    if(val===q.answer) score++;
+    else wrong.push({q, chosen:val});
+  });
+  // Highlight answers
+  questions.forEach(q=>{
+    if(q.answer===null) return;
+    q.displayOptions.forEach(o=>{
+      const label=quizEl.querySelector(`input[name="q-${q.id}"][value="${o.original}"]`)?.closest('.option');
+      if(!label) return;
+      if(o.original===q.answer) label.classList.add('correct');
+      const chosen=document.querySelector(`input[name="q-${q.id}"]:checked`);
+      if(chosen && Number(chosen.value)===o.original && o.original!==q.answer) label.classList.add('wrong');
+    });
+  });
+  wrong.forEach(w=>{
+    const input=w.chosen===null ? null : document.querySelector(`input[name="q-${w.q.id}"][value="${w.chosen}"]`);
+    if(input) input.closest('.option').classList.add('wrong');
+  });
+
+  const pct=scorable.length ? Math.round(score/scorable.length*100) : 0;
+  let review='';
+  if(wrong.length) {
+    review = `<h3>ข้อที่ผิด / ไม่ได้ตอบ (${wrong.length} ข้อ)</h3>` +
+      wrong.map((w,n)=>{
+        const your = w.chosen===null ? 'ไม่ได้ตอบ' : `${w.q.options[w.chosen]}`;
+        return `<div class="review"><b>${n+1}. ${w.q.chapter} • ข้อ ${w.q.number}</b><br>
+        <strong>โจทย์:</strong> ${escapeHtml(w.q.question)}<br>
+        <span style="color:#dc2626"><strong>คำตอบของคุณ:</strong> ${escapeHtml(your)}</span><br>
+        <span style="color:#15803d"><strong>คำตอบที่ถูก:</strong> ${escapeHtml(w.q.options[w.q.answer])}</span></div>`;
+      }).join('');
+  } else {
+    review='<div style="padding:15px;background:#f0fdf4;border:1px solid #86efac;border-radius:12px">🎉 ถูกทุกข้อที่มีคะแนน!</div>';
+  }
+  const selfCount=questions.filter(q=>q.answer===null).length;
+  resultEl.innerHTML=`
+    <div class="score">${score} / ${scorable.length}</div>
+    <div class="stats">
+      <div class="stat"><b>คะแนน</b><br>${pct}%</div>
+      <div class="stat"><b>ถูก</b><br>${score} ข้อ</div>
+      <div class="stat"><b>ผิด/ไม่ตอบ</b><br>${wrong.length} ข้อ</div>
+      ${selfCount ? `<div class="stat"><b>ไม่คิดคะแนน</b><br>${selfCount} ข้อ</div>` : ''}
+    </div>
+    ${review}
+  `;
+  resultEl.style.display='block';
+  resultEl.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+
+setupFilter();
+filterEl.addEventListener('change', newAttempt);
+document.getElementById('shuffleBtn').addEventListener('click', newAttempt);
+document.getElementById('submitBtn').addEventListener('click', submitQuiz);
+document.getElementById('retryBtn').addEventListener('click', newAttempt);
+document.getElementById('topBtn').addEventListener('click', ()=>window.scrollTo({top:0,behavior:'smooth'}));
+newAttempt();
+</script>
+</body>
+</html>
